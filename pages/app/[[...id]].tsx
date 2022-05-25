@@ -57,8 +57,6 @@ const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs
     )
   }
 
-  console.log("IT ME", session.session.user)
-
   return (
     <Pane position="relative">
       <Pane width={300} position="absolute" top={0} left={0} background="tint2" height="100vh" borderRight>
@@ -72,7 +70,7 @@ const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs
         </Pane>
       </Pane>
       <Pane marginLeft={300} width="calc(100vw - 300px)" height="100vh" overflowY="auto" position="relative">
-        <User user={session.user} />
+        <User user={session.session.user} />
         <Page />
       </Pane>
       <NewFolderDialog close={() => setIsShown(false)} isShown={newFolderIsShown} onNewFolder={() => {}} />
@@ -95,8 +93,8 @@ export async function getServerSideProps(ctx) {
 
   const props: any = { session }
   const { db } = await connectToDB()
-  const folders = await folder.getFolders(db, session.user?.id || "1");
-  
+  const folders = await folder.getFolders(db, session.session.user?.id || "1");
+ 
   // if (ctx.params.id && ctx.params.id.length) {
   //   props.activeFolder = folders.find(f => f._id === ctx.params.id[0])
   //   props.activeDocs = await doc.getDocsByFolder(db, props.activeFolder._id)
