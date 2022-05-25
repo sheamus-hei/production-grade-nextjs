@@ -1,12 +1,14 @@
 import React, { FC } from 'react'
 import { Pane, majorScale, Text, Button } from 'evergreen-ui'
 import NextLink from 'next/link'
-import { useSession } from 'next-auth/client'
+import { useSession } from 'next-auth/react'
 import Container from './container'
 import Logo from './logo'
 
 const HomeNav: FC<{ links?: { name: string; link: string }[] }> = ({ links }) => {
-  const [session] = useSession()
+  const { data: session } = useSession();
+  console.log(session)
+
 
   return (
     <nav>
@@ -32,7 +34,7 @@ const HomeNav: FC<{ links?: { name: string; link: string }[] }> = ({ links }) =>
                 <NextLink href={session ? '/app' : '/signin'}>
                   <a>
                     <Button appearance="primary" fontSize="16px">
-                      {session ? 'Dashboard' : 'Sign up'}
+                      {session ? `${session.user.name}` : 'Sign up'}
                     </Button>
                   </a>
                 </NextLink>

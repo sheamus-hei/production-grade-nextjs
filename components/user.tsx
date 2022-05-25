@@ -1,9 +1,15 @@
 import React, { FC } from 'react'
 import { Pane, Position, Avatar, Popover, Menu, LogOutIcon, majorScale, Text } from 'evergreen-ui'
-import { signOut } from 'next-auth/client'
+import { signOut } from 'next-auth/react'
 import { UserSession } from '../types'
 
-const User: FC<{ user: UserSession }> = ({ user }) => {
+const User: FC<{ user: UserSession }> = ({ 
+  user = {
+    _id: "1",
+    name: "Not Signed In"
+  } 
+}) => {
+
   return (
     <Pane position="fixed" top={20} right={20}>
       <Popover
