@@ -9,7 +9,8 @@ import FolderPane from '../../components/folderPane'
 import DocPane from '../../components/docPane'
 import NewFolderDialog from '../../components/newFolderDialog'
 import { getSession, useSession } from 'next-auth/react'
-import { folder, doc, connectToDB } from '../../db'
+import { folder, doc, connectToDB, user } from '../../db'
+import { UserSession } from '../../types'
 
 const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs?: any[] }> = ({
   folders,
@@ -22,11 +23,10 @@ const App: FC<{ folders?: any[]; activeFolder?: any; activeDoc?: any; activeDocs
   const [allFolders, setFolders] = useState(folders.length? folders :  [
     {
       _id: 1, 
-      name: "hello"
+      name: "placeholder"
     }
   ])
-  const { data: session } = useSession();
-
+  const { data: session, status } = useSession();
 
   const Page = () => {
     if (activeDoc) {
@@ -83,29 +83,32 @@ App.defaultProps = {
 }
 
 export async function getServerSideProps(ctx) {
-  const session = await getSession(ctx);
-
-  if (!session) {
-    return {
-      props: { session }
-    }
+  const session: { user: UserSession } = await getSession(ctx)
+  // not signed in
+  if (!session || !session.token.user) {
+    return { props: {} }
   }
 
   const props: any = { session }
   const { db } = await connectToDB()
-  const folders = await folder.getFolders(db, session.session.user?.id || "1");
- 
-  // if (ctx.params.id && ctx.params.id.length) {
-  //   props.activeFolder = folders.find(f => f._id === ctx.params.id[0])
-  //   props.activeDocs = await doc.getDocsByFolder(db, props.activeFolder._id)
-    
-  //   if (ctx.params.id.length > 1) {
-  //     props.activeDoc = await props.activeDocs.find(d => d._id === ctx.params.id[2])
-  //   }
-  // }
+  const folders = await folder.getFolders(db, session.token.user._id)
+  props.folders = folders
+
+  if (ctx.params.id) {
+    const activeFolder = folders.find((f) => f._id === ctx.params.id[0])
+    const activeDocs = await doc.getDocsByFolder(db, activeFolder._id)
+    props.activeFolder = activeFolder
+    props.activeDocs = activeDocs
+
+    const activeDocId = ctx.params.id[1]
+
+    if (activeDocId) {
+      props.activeDoc = await doc.getOneDoc(db, activeDocId)
+    }
+  }
 
   return {
-    props
+    props,
   }
 }
 
@@ -118,6 +121,6 @@ export async function getServerSideProps(ctx) {
  *
  * An unauth user should not be able to access this page.
  *
- * @param context
+ * @param ctx
  */
 export default App

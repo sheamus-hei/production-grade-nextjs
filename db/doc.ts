@@ -2,7 +2,7 @@ import { Db } from 'mongodb'
 import { nanoid } from 'nanoid'
 
 export const getOneDoc = async (db: Db, id: string) => {
-  return db.collection('docs').find({ _id: id });
+  return db.collection('docs').findOne({ _id: id });
 }
 
 export const getDocsByFolder = async (db: Db, folderId: string) => {
@@ -10,7 +10,7 @@ export const getDocsByFolder = async (db: Db, folderId: string) => {
 }
 
 export const createDoc = async (db: Db, doc: { createdBy: string; folder: string; name: string; content?: any }) => {
-  const newDoc = await db.collection('folders').insertOne({
+  const newDoc = await db.collection('docs').insertOne({
     _id: nanoid(),
     ...doc,
     createdAt: new Date().toDateString(),
