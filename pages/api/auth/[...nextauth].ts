@@ -3,12 +3,12 @@ import GitHubProvider from 'next-auth/providers/github'
 import { connectToDB, folder, doc, user } from '../../../db'
 
 export default (req, res) => NextAuth(req, res, {
-  // session: {
-  //   jwt: true,
-  // },
-  // jwt: {
-  //   secret: process.env.JWT_SECRET,
-  // },
+  session: {
+    strategy: "jwt"
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
   providers: [
     GitHubProvider({
       clientId: process.env.GITHUB_ID,
@@ -24,19 +24,19 @@ export default (req, res) => NextAuth(req, res, {
     async session(session) {
       return session
     },
-    async jwt(tokenPayload) {
+    async jwt({ token }) {
       const { db } = await connectToDB()
-      if (tokenPayload.token.email && !tokenPayload.token.user?._id) {
+      if (token.email && !token.user?._id) {
         // find user in db
-        const userInDb = await user.getUserByEmail(db, tokenPayload.token.email)
+        const userInDb = await user.getUserByEmail(db, token.email)
         if (userInDb) {
-          tokenPayload.token.user = userInDb
+          token.user = userInDb
         } else {
           // make new user for that email
           const newUser = await user.createUser(db, {
-            name: tokenPayload.token.name,
-            email: tokenPayload.token.email,
-            picture: tokenPayload.token.picture,
+            name: token.name,
+            email: token.email,
+            picture: token.picture,
           }).then(res => res.ops[0])
           const personalFolder = await folder.createFolder(db, {
             createdBy: `${newUser._id}`, 
@@ -60,10 +60,10 @@ export default (req, res) => NextAuth(req, res, {
               version: '2.12.4',
             },
           })
-          tokenPayload.token.user = newUser
+          token.user = newUser
         }
       }
-      return tokenPayload.token
+      return token
     },
   }
 })

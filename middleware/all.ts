@@ -4,5 +4,6 @@ import auth from './auth'
 
 const middleware = nc()
 
-middleware.use(db).use(auth)
+middleware.use(db)
+.use(auth)
 export default middleware

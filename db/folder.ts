@@ -2,7 +2,6 @@ import { Db } from 'mongodb'
 import { nanoid } from 'nanoid'
 
 export const createFolder = async (db: Db, folder: { createdBy: string; name: string }) => {
-  
   const newFolder = await db.collection('folders').insertOne({
     _id: nanoid(),
     ...folder,
